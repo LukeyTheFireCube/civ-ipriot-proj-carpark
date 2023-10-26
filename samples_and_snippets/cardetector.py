@@ -1,9 +1,18 @@
 import tkinter as tk
+import paho.mqtt.client as paho
+import json
 
+BROKER, PORT = "localhost", 1883
 class CarDetector:
-    """Provides a couple of simple buttons that can be used to represent a sensor detecting a car. This is a skeleton only."""
+    """Provides a couple of simple buttons that can be used to represent a sensor detecting a car.
+    This is a skeleton only."""
 
-    def __init__(self):
+    def __init__(self, data):
+        self.data = data
+
+        self.client = paho.Client()
+        self.client.connect(BROKER, PORT)
+
         self.root = tk.Tk()
         self.root.title("Car Detector ULTRA")
 
@@ -18,28 +27,28 @@ class CarDetector:
 
     def incoming_car(self):
         # TODO: implement this method to publish the detection via MQTT
-        """if data['CarParks'][0]['total-spaces'] > 0 and data['CarParks'][0]['total-cars'] < 130:
-            data['CarParks'][0]['total-spaces'] -= 1
-            data['CarParks'][0]['total-cars'] += 1
-            print("Car goes in")
+        if self.data['CarParks'][0]['total-spaces'] > 0 and self.data['CarParks'][0]['total-cars'] < 130:
+            self.data['CarParks'][0]['total-spaces'] -= 1
+            self.data['CarParks'][0]['total-cars'] += 1
+            with open('config.json', 'w') as file:
+                json.dump(self.data, file)
+            self.client.publish("lot/sensor", f"Car goes in. Bays remaining: {self.data['CarParks'][0]['total-spaces']}")
         else:
-            print("Car cannot go in because car park is full")
-        print(data)
-        """
-
-        print("Car goes in")
-
+            self.client.publish("lot/sensor", f"Car park is full. Bays remaining: {self.data['CarParks'][0]['total-spaces']}")
 
 
     def outgoing_car(self):
         # TODO: implement this method to publish the detection via MQTT
-        """if data['CarParks'][0]['total-cars'] > 0:
-            data['CarParks'][0]['total-spaces'] += 1
-            data['CarParks'][0]['total-cars'] -= 1
-            print("Car goes out")
-        else:
-            print("Car park is empty.")
-        print(data)
-        """
+        if self.data['CarParks'][0]['total-cars'] > 0:
+            self.data['CarParks'][0]['total-spaces'] += 1
+            self.data['CarParks'][0]['total-cars'] -= 1
+            with open('config.json', 'w') as file:
+                json.dump(self.data, file)
 
-        print("Car goes out")
+            # self.client.loop_start()
+            self.client.publish("lot/sensor", f"Car goes out. Bays remaining: {self.data['CarParks'][0]['total-spaces']}")
+            # self.client.loop_stop()
+        else:
+            # self.client.loop_start()
+            self.client.publish("lot/sensor", f"Car park is empty. Bays remaining: {self.data['CarParks'][0]['total-spaces']}")
+            # self.client.loop_stop()

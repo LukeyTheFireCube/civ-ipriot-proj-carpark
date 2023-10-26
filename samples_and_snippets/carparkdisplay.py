@@ -3,6 +3,12 @@ import time
 import threading
 import tkinter as tk
 from typing import Iterable
+import json
+
+import paho.mqtt.client as paho
+from paho.mqtt.client import MQTTMessage
+
+BROKER, PORT = "localhost", 1883
 
 class WindowedDisplay:
     """Displays values for a given set of fields as a simple GUI window. Use .show() to display the window; use .update() to update the values displayed.
@@ -63,6 +69,10 @@ class CarParkDisplay():
 
     def __init__(self, data):
         self.data = data
+        self.client = paho.Client()
+        self.client.on_message = self.on_message
+        self.client.on_connect = self.on_connect
+        self.client.connect(BROKER, PORT)
         self.window = WindowedDisplay(
             'Moondalup', CarParkDisplay.fields)
         updater = threading.Thread(target=self.check_updates)
@@ -70,17 +80,32 @@ class CarParkDisplay():
         updater.start()
         self.window.show()
 
+    @staticmethod
+    def on_connect(client, userdata, flags, rc):
+        print("Car Park Display Connected")
+        client.subscribe("lot/sensor")
+
+    @staticmethod
+    def on_message(client, userdata, msg):
+        print(f'Received {msg.payload}')
+        # When you get an update, refresh the display.
+        # self.window.update(field_values)
+
     def check_updates(self):
         # TODO: This is where you should manage the MQTT subscription
+
         while True:
             # NOTE: Dictionary keys *must* be the same as the class fields
-            bays_display = self.data['CarParks'][0]['total-spaces']
+            with open('config.json') as file:
+                data = json.load(file)
+
+                available_bays = data['CarParks'][0]['total-spaces']
 
             field_values = dict(zip(CarParkDisplay.fields, [
-                f'{bays_display:03d}',
+                f'{available_bays:03d}',
                 f'{random.randint(0, 45):02d}℃',
                 time.strftime("%H:%M:%S")]))
             # Pretending to wait on updates from MQTT
-            time.sleep(1)
-            # When you get an update, refresh the display.
-            self.window.update(field_values)
+            # time.sleep(1)
+            self.client.loop_forever()
+

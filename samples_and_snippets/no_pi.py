@@ -61,7 +61,8 @@ class WindowedDisplay:
         self.window.mainloop()
 
     def update(self, updated_values: dict):
-        """Update the values displayed in the GUI. Expects a dictionary with keys matching the field names passed to the constructor."""
+        """Update the values displayed in the GUI.
+        Expects a dictionary with keys matching the field names passed to the constructor."""
         for field in self.gui_elements:
             if field.startswith('lbl_field'):
                 field_value = field.replace('field', 'value')
@@ -80,9 +81,7 @@ if __name__ == '__main__':
     with open('config.json') as f:
         data = json.load(f)
 
-    print(data)
-
-    CarParkDisplay(data)
-    # CarDetector()
+    # CarParkDisplay(data)
+    CarDetector(data)
 
 
