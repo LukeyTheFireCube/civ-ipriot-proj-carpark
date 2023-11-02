@@ -80,6 +80,7 @@ class CarParkDisplay():
         updater.start()
         self.window.show()
 
+
     @staticmethod
     def on_connect(client, userdata, flags, rc):
         print("Car Park Display Connected")
@@ -89,7 +90,7 @@ class CarParkDisplay():
     def on_message(client, userdata, msg):
         print(f'Received {msg.payload}')
         # When you get an update, refresh the display.
-        # self.window.update(field_values)
+        # client.window.update(CarParkDisplay.fields)
 
     def check_updates(self):
         # TODO: This is where you should manage the MQTT subscription
@@ -103,9 +104,10 @@ class CarParkDisplay():
 
             field_values = dict(zip(CarParkDisplay.fields, [
                 f'{available_bays:03d}',
-                f'{random.randint(0, 45):02d}℃',
+                f'{random.randint(19, 22):02d}℃',
                 time.strftime("%H:%M:%S")]))
             # Pretending to wait on updates from MQTT
             # time.sleep(1)
             self.client.loop_forever()
+
 

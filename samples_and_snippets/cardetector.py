@@ -45,10 +45,6 @@ class CarDetector:
             with open('config.json', 'w') as file:
                 json.dump(self.data, file)
 
-            # self.client.loop_start()
             self.client.publish("lot/sensor", f"Car goes out. Bays remaining: {self.data['CarParks'][0]['total-spaces']}")
-            # self.client.loop_stop()
         else:
-            # self.client.loop_start()
             self.client.publish("lot/sensor", f"Car park is empty. Bays remaining: {self.data['CarParks'][0]['total-spaces']}")
-            # self.client.loop_stop()
