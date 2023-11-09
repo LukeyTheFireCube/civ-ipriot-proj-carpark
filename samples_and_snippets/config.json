@@ -1,1 +1,1 @@
-{"CarParks": [{"name": "raf-park-international", "total-spaces": 125, "total-cars": 5, "location": "moondalup", "broker": "localhost", "port": 1883, "Sensors": [{"name": "sensor1", "type": "entry"}, {"name": "sensor2", "type": "exit"}], "Displays": [{"name": "display1"}]}]}
+{"CarParks": [{"name": "raf-park-international", "total-spaces": 120, "total-cars": 10, "location": "moondalup", "broker": "localhost", "port": 1883, "Sensors": [{"name": "sensor1", "type": "entry"}, {"name": "sensor2", "type": "exit"}], "Displays": [{"name": "display1"}]}]}

@@ -3,6 +3,7 @@ from datetime import datetime
 import mqtt_device
 import paho.mqtt.client as paho
 from paho.mqtt.client import MQTTMessage
+import json
 
 
 class CarPark(mqtt_device.MqttDevice):
@@ -10,10 +11,10 @@ class CarPark(mqtt_device.MqttDevice):
 
     def __init__(self, config):
         super().__init__(config)
-        self.total_spaces = config['total-spaces']
-        self.total_cars = config['total-cars']
+        self.total_spaces = config['CarParks'][0]['total-spaces']
+        self.total_cars = config['CarParks'][0]['total-cars']
         self.client.on_message = self.on_message
-        self.client.subscribe('sensor')
+        self.client.subscribe('lot/sensor')
         self.client.loop_forever()
         self._temperature = None
 
@@ -24,14 +25,14 @@ class CarPark(mqtt_device.MqttDevice):
 
     @property
     def temperature(self):
-        self._temperature
+        return self._temperature
     
     @temperature.setter
     def temperature(self, value):
         self._temperature = value
         
     def _publish_event(self):
-        readable_time = datetime.now().strftime('%H:%M')
+        readable_time = datetime.now().strftime('%H:%M:%S')
         print(
             (
                 f"TIME: {readable_time}, "
@@ -50,34 +51,29 @@ class CarPark(mqtt_device.MqttDevice):
         self.total_cars += 1
         self._publish_event()
 
-
-
     def on_car_exit(self):
         self.total_cars -= 1
         self._publish_event()
 
     def on_message(self, client, userdata, msg: MQTTMessage):
         payload = msg.payload.decode()
+        print(payload)
         # TODO: Extract temperature from payload
-        # self.temperature = ... # Extracted value
+        #obj = json.loads(payload)
+        #self._temperature = obj[]
         if 'exit' in payload:
             self.on_car_exit()
         else:
             self.on_car_entry()
+        with open('config.json', 'w') as file:
+            json.dump(config, file)
+            print(file)
 
 
 if __name__ == '__main__':
-    config = {'name': "raf-park",
-              'total-spaces': 130,
-              'total-cars': 0,
-              'location': 'L306',
-              'topic-root': "lot",
-              'broker': 'localhost',
-              'port': 1883,
-              'topic-qualifier': 'entry',
-              'is_stuff': False
-              }
     # TODO: Read config from file
+    with open('config.json') as f:
+        config = json.load(f)
+
     car_park = CarPark(config)
-    print("Carpark initialized")
     print("Carpark initialized")

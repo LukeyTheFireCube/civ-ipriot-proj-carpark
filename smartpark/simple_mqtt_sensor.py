@@ -2,7 +2,7 @@
 a publication via mqtt"""
 import random
 
-import mqtt_device
+from samples_and_snippets import mqtt_device
 
 
 class Sensor(mqtt_device.MqttDevice):
