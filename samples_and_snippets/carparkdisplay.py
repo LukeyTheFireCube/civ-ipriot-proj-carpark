@@ -97,7 +97,8 @@ class CarParkDisplay:
         the_fields = self.get_field_values()
         self.window.update(the_fields)
 
-    def get_field_values(self):
+    @staticmethod
+    def get_field_values():
         with open('config.json') as file:
             data = json.load(file)
 

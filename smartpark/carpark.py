@@ -65,14 +65,14 @@ class CarPark(mqtt_device.MqttDevice):
             self.on_car_exit()
         else:
             self.on_car_entry()
-        with open('config.json', 'w') as file:
+        with open('../samples_and_snippets/config.json', 'w') as file:
             json.dump(config, file)
             print(file)
 
 
 if __name__ == '__main__':
     # TODO: Read config from file
-    with open('config.json') as f:
+    with open('../samples_and_snippets/config.json') as f:
         config = json.load(f)
 
     car_park = CarPark(config)
