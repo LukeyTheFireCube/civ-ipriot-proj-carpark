@@ -71,10 +71,8 @@ class CarDetector:
         if data['CarParks'][0]['total-spaces'] > 0:
             message = new_car.license_plate +\
                       ", " + new_car.model +\
-                      ", " + new_car.entry_time +\
-                      ", " + str(data['CarParks'][0]['total-cars'])
+                      ", " + new_car.entry_time
 
-            print(message)
             with open('car_park', 'a') as park:
                 park.write(message + '\n')
             self.client.publish("lot/sensor",

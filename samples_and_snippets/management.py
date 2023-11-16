@@ -1,6 +1,7 @@
 from datetime import datetime
 import paho.mqtt.client as paho
 from paho.mqtt.client import MQTTMessage
+import json
 
 BROKER, PORT = "localhost", 1883
 
@@ -43,6 +44,7 @@ class CarParkManagement:
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
         self.client.connect(BROKER, PORT)
+        self.client.loop_forever()
 
     def track_parking_bay(self, target_bay):
         count = 0
@@ -67,18 +69,25 @@ class CarParkManagement:
         if 'exit' in payload:
             self.carpark.remove_car()
         elif 'entry' in payload:
-            payload = payload[len("entry: ")]
+            payload = payload[len("entry: "):]
             components = payload.split(', ')
             new_car = Car(components[0], components[1], components[2], "")
             self.carpark.add_car(new_car)
 
+
 if __name__ == '__main__':
+    the_cars: list[Car] = []
     with open('car_park', 'r') as park:
-        count = 0
         for line in park:
             if line != "":
                 components = line.split(', ')
                 new_car = Car(components[0], components[1], components[2], "")
+                the_cars.append(new_car)
 
+    with open('config.json', 'r') as file:
+        data = json.load(file)
+        count = data['CarParks'][0]['total-spaces']
 
-    CarParkManagement()
+    the_park = CarPark(the_cars, count)
+
+    CarParkManagement(the_park)
