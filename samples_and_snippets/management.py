@@ -22,9 +22,6 @@ class CarPark:
         self.cars = cars
         self.available_bays = available_bays
 
-    def get_available_bays(self):
-        return self.available_bays
-
     def add_car(self, car: Car):
         # add a car to self.cars
         if self.available_bays > 0:
@@ -58,20 +55,11 @@ class CarParkManagement:
         self.client.connect(BROKER, PORT)
         self.client.loop_forever()
 
-    def track_parking_bay(self, target_bay):
-        count = 0
-        for item in self.carpark.cars:
-            count += 1
-            if count == target_bay:
-                if item == '':
-                    print("The bay is empty.")
-                else:
-                    print("There is a " + item.model +
-                          " with license plate " + item.license_plate +
-                          " at bay " + target_bay)
+    def get_available_bays(self):
+        return self.carpark.available_bays
 
-    def write_log(self, message: str, file_path):
-        with open(file_path, 'r') as logs:
+    def write_log(self, message):
+        with open('carpark_log', 'a') as logs:
             logs.write(message + '\n')
 
     @staticmethod
@@ -88,20 +76,26 @@ class CarParkManagement:
             leaving_car = Car(components[0], components[1], components[2], "")
             self.carpark.remove_car(leaving_car)
 
-            log_message = "A " + str(components[1]) +\
-                          " with license plate " + str(components[0])\
-                          + " has left at " + str(datetime.now().strftime('%H:%M:%S'))
-            self.write_log(log_message, 'carpark_log')
+            clear_blank_lines('car_park')
+
+            log_message = "A " + str(components[1]) + " with license plate " + str(components[0]) + " has left at " + str(datetime.now().strftime('%H:%M:%S'))
+            self.write_log(log_message)
+
+            message = str(self.get_available_bays()) + " bays available."
+            self.client.publish("lot/sensor", message)
         elif 'entry' in payload:
             payload = payload[len("entry: "):]
             components = payload.split(', ')
             new_car = Car(components[0], components[1], components[2], "")
             self.carpark.add_car(new_car)
 
-            log_message = "A " + str(components[1]) + \
-                          " with license plate " + str(components[0])\
-                          + " has entered at " + str(datetime.now().strftime('%H:%M:%S'))
-            self.write_log(log_message, 'carpark_log')
+            clear_blank_lines('car_park')
+
+            log_message = "A " + str(components[1]) + " with license plate " + str(components[0]) + " has entered at " + str(components[2])
+            self.write_log(log_message)
+
+            message = str(self.get_available_bays()) + " bays available."
+            self.client.publish("lot/sensor", message)
 
 
 def clear_blank_lines(file_path):

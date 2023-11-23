@@ -20,7 +20,5 @@ if __name__ == '__main__':
     """It is heavily recommended to run the car park display normally while running the car detector using a
     Git Bash terminal."""
 
-
-
     # CarParkDisplay()
     CarDetector()
