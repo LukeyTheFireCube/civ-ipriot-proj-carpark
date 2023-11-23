@@ -35,6 +35,18 @@ class CarPark:
         if car in self.cars:
             self.cars.remove(car)
             self.available_bays += 1
+            clear_blank_lines('car_park')
+
+    @staticmethod
+    def get_car_park():
+        the_park: list[Car] = []
+        with open('car_park', 'r') as park:
+            for line in park:
+                if line != "":
+                    components = line.split(', ')
+                    the_park.append(Car(components[0], components[1], components[2], ""))
+
+            return the_park
 
 
 class CarParkManagement:
@@ -58,6 +70,10 @@ class CarParkManagement:
                           " with license plate " + item.license_plate +
                           " at bay " + target_bay)
 
+    def write_log(self, message: str, file_path):
+        with open(file_path, 'r') as logs:
+            logs.write(message + '\n')
+
     @staticmethod
     def on_connect(client, userdata, flags, rc):
         print("Car Park Management Connected")
@@ -67,16 +83,42 @@ class CarParkManagement:
         payload = msg.payload.decode()
         print(payload)
         if 'exit' in payload:
-            self.carpark.remove_car()
+            payload = payload[len("exit: "):]
+            components = payload.split(', ')
+            leaving_car = Car(components[0], components[1], components[2], "")
+            self.carpark.remove_car(leaving_car)
+
+            log_message = "A " + str(components[1]) +\
+                          " with license plate " + str(components[0])\
+                          + " has left at " + str(datetime.now().strftime('%H:%M:%S'))
+            self.write_log(log_message, 'carpark_log')
         elif 'entry' in payload:
             payload = payload[len("entry: "):]
             components = payload.split(', ')
             new_car = Car(components[0], components[1], components[2], "")
             self.carpark.add_car(new_car)
 
+            log_message = "A " + str(components[1]) + \
+                          " with license plate " + str(components[0])\
+                          + " has entered at " + str(datetime.now().strftime('%H:%M:%S'))
+            self.write_log(log_message, 'carpark_log')
+
+
+def clear_blank_lines(file_path):
+    # Read the content of the file
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+    # Remove blank lines
+    non_blank_lines = [line for line in lines if line.strip()]
+
+    # Write the updated content back to the file
+    with open(file_path, 'w') as file:
+        file.writelines(non_blank_lines)
+
 
 if __name__ == '__main__':
     the_cars: list[Car] = []
+    clear_blank_lines('car_park')
     with open('car_park', 'r') as park:
         for line in park:
             if line != "":

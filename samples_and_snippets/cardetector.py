@@ -56,6 +56,32 @@ class CarDetector:
             else:
                 return "ERR"
 
+    @staticmethod
+    def get_car_park():
+        count = 0
+        the_park: list[Car] = []
+        with open('car_park', 'r') as park:
+            for line in park:
+                if line != "":
+                    count += 1
+                    components = line.split(', ')
+                    the_park.append(Car(components[0], components[1], components[2], ""))
+
+            return the_park, count
+
+    def clear_target_line(self, file_path, target_line_number=1):
+        # Read the content of the file
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+
+        # Clear the target line
+        if 1 <= target_line_number <= len(lines):
+            lines[target_line_number - 1] = '\n'
+
+        # Write the updated content back to the file
+        with open(file_path, 'w') as file:
+            file.writelines(lines)
+
     def incoming_car(self):
         with open('config.json', 'r') as file:
             data = json.load(file)
@@ -90,15 +116,26 @@ class CarDetector:
     def outgoing_car(self):
         with open('config.json', 'r') as file:
             data = json.load(file)
+
+        park, number_of_cars = self.get_car_park()
         # TODO: implement this method to publish the detection via MQTT
-        if data['CarParks'][0]['total-cars'] > 0:
+        if data['CarParks'][0]['total-cars'] > 0 and number_of_cars > 0:
+            leaving_car = park[0]
+            message = "A " + leaving_car.model + " with license plate " + leaving_car.license_plate + " leaves."
+            self.clear_target_line('car_park', 1)
+            self.client.publish("lot/sensor", message)
+
+            message = leaving_car.license_plate + \
+                      ", " + leaving_car.model + \
+                      ", " + datetime.now().strftime('%H:%M:%S')
+
             data['CarParks'][0]['total-spaces'] += 1
             data['CarParks'][0]['total-cars'] -= 1
             with open('config.json', 'w') as file:
                 json.dump(data, file)
 
             self.client.publish("lot/sensor",
-                                f"Car goes out. Bays remaining: {data['CarParks'][0]['total-spaces']}")
+                                "exit: " + message)
         else:
             self.client.publish("lot/sensor",
-                                f"Car park is empty. Bays remaining: {data['CarParks'][0]['total-spaces']}")
+                                "Car park is empty.")
