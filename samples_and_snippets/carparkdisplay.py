@@ -94,28 +94,30 @@ class CarParkDisplay:
     def on_message(self, client, userdata, msg):
         print(f'Received {msg.payload}')
         # When you get an update, refresh the display.
-        the_fields = self.get_field_values()
+        the_fields, temp = self.get_field_values()
+        self.client.publish("lot/sensor", f"Car park temperature: {str(temp):02d}℃")
         self.window.update(the_fields)
 
     @staticmethod
     def get_field_values():
-        with open('config.json') as file:
+        with open('config.json', 'r') as file:
             data = json.load(file)
 
             available_bays = data['CarParks'][0]['total-spaces']
+            temp = random.randint(19, 22)
 
         field_values = dict(zip(CarParkDisplay.fields, [
             f'{available_bays:03d}',
-            f'{random.randint(19, 22):02d}℃',
+            f'{temp:02d}℃',
             time.strftime("%H:%M:%S")]))
-        return field_values
+        return field_values, temp
 
     def check_updates(self):
         # TODO: This is where you should manage the MQTT subscription
 
         while True:
             # NOTE: Dictionary keys *must* be the same as the class fields
-            the_fields = self.get_field_values()
+            the_fields, temp = self.get_field_values()
             # Pretending to wait on updates from MQTT
             self.window.update(the_fields)
             self.client.loop_forever()

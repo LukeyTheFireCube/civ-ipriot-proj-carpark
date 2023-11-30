@@ -18,7 +18,8 @@ if __name__ == '__main__':
     # If you uncomment one, comment-out the other.
 
     """It is heavily recommended to run the car park display normally while running the car detector using a
-    Git Bash terminal."""
+    Git Bash terminal.
+    While doing so, run the car park management class in another Git Bash terminal."""
 
     # CarParkDisplay()
     CarDetector()
